@@ -1,0 +1,22 @@
+
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import './Sidebar.css';
+
+const Sidebar = () => (
+  <aside className="sidebar">
+    <div className="sidebar-logo">CropRisk</div>
+    <nav className="sidebar-nav">
+      <ul>
+        <li><NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink></li>
+        <li><NavLink to="/farms" className={({ isActive }) => isActive ? 'active' : ''}>Farms</NavLink></li>
+        <li><NavLink to="/predictions" className={({ isActive }) => isActive ? 'active' : ''}>Predictions</NavLink></li>
+        <li><NavLink to="/alerts" className={({ isActive }) => isActive ? 'active' : ''}>Alerts</NavLink></li>
+        <li><NavLink to="/users" className={({ isActive }) => isActive ? 'active' : ''}>Users</NavLink></li>
+          <li><NavLink to="/satellite-images" className={({ isActive }) => isActive ? 'active' : ''}>Satellite Images</NavLink></li>
+      </ul>
+    </nav>
+  </aside>
+);
+
+export default Sidebar;

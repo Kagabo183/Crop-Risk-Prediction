@@ -1,0 +1,7 @@
+.main-content {
+  margin-left: 220px;
+  margin-top: 64px;
+  padding: 0;
+  min-height: calc(100vh - 64px);
+  background: transparent;
+}

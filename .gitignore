@@ -1,0 +1,81 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+logs/*.log
+data/raw/*
+data/processed/*
+data/sentinel2/*.tif
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/sentinel2/.gitkeep
+*.db
+*.sqlite3
+
+# Docker volumes
+db_data/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Excel exports
+*.xlsx
+scripts/*.xlsx
+app/ml/models/*.pkl
+app/ml/models/*.joblib
+app/ml/models/*.h5
+!app/ml/models/.gitkeep
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

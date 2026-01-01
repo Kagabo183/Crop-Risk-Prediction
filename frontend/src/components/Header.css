@@ -1,0 +1,19 @@
+.header {
+  height: 64px;
+  background: #fff;
+  color: #1a2732;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px 0 240px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+.header-user {
+  font-size: 1rem;
+  color: #4fd1c5;
+}

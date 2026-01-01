@@ -1,0 +1,19 @@
+.dashboard-content {
+  padding: 96px 32px 32px 240px;
+  min-height: 100vh;
+  background: #f7fafc;
+}
+.dashboard-widgets {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+}
+.widget {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 24px 32px;
+  min-width: 180px;
+  font-size: 1.2rem;
+  color: #1a2732;
+}

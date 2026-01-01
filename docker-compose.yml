@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: crop_risk_db
+    command: ["-c", "max_connections=200"]
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
+      - REDIS_URL=redis
+    volumes:
+      - .:/app:cached
+      - ./data/sentinel2:/app/data/sentinel2:cached
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  worker:
+    build: .
+    command: celery -A app.tasks.celery_app.celery_app worker --loglevel=info --concurrency=6
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - .:/app:cached
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis
+      - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
+
+  beat:
+    build: .
+    command: celery -A app.tasks.celery_app.celery_app beat --loglevel=info
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - .:/app:cached
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis
+      - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
+
+volumes:
+  db_data:
