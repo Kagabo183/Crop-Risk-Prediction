@@ -12,6 +12,7 @@ from app.db.database import SessionLocal
 from app.models.farm import Farm
 from app.models.prediction import Prediction
 from app.models.data import SatelliteImage
+from app.ml.intelligence import RiskIntelligence
 from sqlalchemy import func
 
 def calculate_ndvi_features(farm_id, db, days=30):
@@ -179,12 +180,35 @@ def generate_ml_predictions(count=50):
         
         disease_risk = disease_levels[disease_idx]
         
+        # Initialize intelligence engine
+        intel = RiskIntelligence()
+        
+        # Calculate advanced intelligence features
+        feature_importance = intel.calculate_feature_importance(features, risk_score)
+        top_drivers = intel.get_top_risk_drivers(feature_importance, n=3)
+        risk_explanation = intel.explain_risk_drivers(top_drivers, risk_score)
+        time_to_impact = intel.calculate_time_to_impact(risk_score, features['ndvi_trend'])
+        confidence = intel.calculate_prediction_confidence(features)
+        recommendations = intel.generate_recommendations(risk_score, top_drivers, time_to_impact)
+        impact_metrics = intel.calculate_impact_metrics(risk_score, yield_loss, farm.area)
+        
+        # Convert top_drivers list of tuples to dictionary for schema
+        risk_drivers_dict = {driver[0]: driver[1] for driver in top_drivers}
+        
         prediction = Prediction(
             farm_id=farm.id,
             predicted_at=pred_date,
             risk_score=risk_score,
             yield_loss=yield_loss,
-            disease_risk=disease_risk
+            disease_risk=disease_risk,
+            # Advanced intelligence fields
+            time_to_impact=time_to_impact,
+            confidence_level=confidence['level'],
+            confidence_score=confidence['score'],
+            risk_drivers=risk_drivers_dict,
+            risk_explanation=risk_explanation,
+            recommendations=recommendations,
+            impact_metrics=impact_metrics
         )
         predictions.append(prediction)
         
@@ -194,32 +218,35 @@ def generate_ml_predictions(count=50):
     db.add_all(predictions)
     db.commit()
     
-    print(f"\n✅ Generated {count} ML-based predictions")
+    print(f"\n✅ Generated {count} ML-based predictions with advanced intelligence")
     
     # Show statistics
     avg_risk = sum(p.risk_score for p in predictions) / len(predictions)
     avg_yield_loss = sum(p.yield_loss for p in predictions) / len(predictions)
     high_risk = sum(1 for p in predictions if p.risk_score >= 60)
+    immediate_action = sum(1 for p in predictions if p.time_to_impact == "< 7 days")
     
     print(f"\n📊 Prediction Statistics:")
     print(f"  • Average Risk Score: {avg_risk:.1f}%")
     print(f"  • Average Yield Loss: {avg_yield_loss:.1f}%")
     print(f"  • High Risk Farms: {high_risk}/{count}")
+    print(f"  • Immediate Action Required: {immediate_action}/{count}")
     
     # Show sample predictions
-    print(f"\n📈 Sample Predictions:")
+    print(f"\n📈 Sample High-Risk Predictions:")
     samples = sorted(predictions, key=lambda x: x.risk_score, reverse=True)[:5]
     for pred in samples:
         features = calculate_ndvi_features(pred.farm_id, db)
-        print(f"  • Farm {pred.farm_id} | Risk: {pred.risk_score:.1f}% | "
-              f"Yield Loss: {pred.yield_loss:.1f}% | "
-              f"Disease: {pred.disease_risk} | "
-              f"NDVI: {features['current_ndvi']:.3f}")
+        print(f"\n  Farm {pred.farm_id}:")
+        print(f"  • Risk: {pred.risk_score:.1f}% | Yield Loss: {pred.yield_loss:.1f}%")
+        print(f"  • Time to Impact: {pred.time_to_impact}")
+        print(f"  • Confidence: {pred.confidence_level} ({pred.confidence_score:.0f}%)")
+        print(f"  • Explanation: {pred.risk_explanation[:100]}...")
     
     db.close()
     return predictions
 
 if __name__ == "__main__":
-    print("🚀 ML-Based Prediction Generator")
-    print("=" * 50)
+    print("🚀 ML-Based Prediction Generator with Advanced Intelligence")
+    print("=" * 70)
     generate_ml_predictions(count=50)
