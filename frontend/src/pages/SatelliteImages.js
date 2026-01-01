@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSatelliteImages, fetchNDVIMeans, triggerScan, getTaskStatus } from '../api';
+import { fetchSatelliteImages, fetchNDVIMeans, triggerScan } from '../api';
 
 const SatelliteImages = () => {
   const [images, setImages] = useState([]);

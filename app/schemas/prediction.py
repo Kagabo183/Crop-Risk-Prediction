@@ -1,20 +1,19 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import date, datetime
+from datetime import datetime
 
 class PredictionBase(BaseModel):
     farm_id: int
-    date: date
     risk_score: float
-    yield_loss_percent: Optional[float] = None
-    disease_risk_level: Optional[str] = None
+    yield_loss: Optional[float] = None
+    disease_risk: Optional[str] = None
 
 class PredictionCreate(PredictionBase):
     pass
 
 class Prediction(PredictionBase):
     id: int
-    created_at: datetime
+    predicted_at: datetime
 
     class Config:
         from_attributes = True
