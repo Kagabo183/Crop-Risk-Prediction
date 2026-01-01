@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchSatelliteImageCount, fetchFarms, fetchPredictions, fetchAlerts } from '../api';
+import MapPanel from './MapPanel';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -11,18 +12,27 @@ const Dashboard = () => {
   const [recentAlerts, setRecentAlerts] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [intelligenceMetrics, setIntelligenceMetrics] = useState(null);
+  const [farmsList, setFarmsList] = useState([]);
+  const [allPredictions, setAllPredictions] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState(null);
+  const [filters, setFilters] = useState({});
+  const [expandedRows, setExpandedRows] = useState([]);
 
   useEffect(() => {
     fetchSatelliteImageCount()
       .then(count => setSatelliteCount(count))
       .catch(() => setSatelliteCount('Error'));
     fetchFarms()
-      .then(farms => setFarmCount(farms.length))
+      .then(farms => {
+        setFarmCount(farms.length);
+        setFarmsList(farms);
+      })
       .catch(() => setFarmCount('Error'));
     fetchPredictions()
       .then(preds => {
         console.log('Predictions:', preds);
         setPredictionCount(preds.length);
+        setAllPredictions(preds);
         setRecentPredictions(preds.slice(-10).reverse());
         
         // Calculate analytics for national-level insights
@@ -110,6 +120,24 @@ const Dashboard = () => {
     }
   };
 
+  const toggleRow = (predId) => {
+    setExpandedRows(prev => {
+      const copy = new Set(prev);
+      if (copy.has(predId)) copy.delete(predId); else copy.add(predId);
+      return Array.from(copy);
+    });
+  };
+
+  const handleSelectFarm = (farmId) => {
+    setSelectedFarmId(farmId);
+    // Expand most recent prediction for this farm if exists
+    const predsForFarm = allPredictions.filter(p => p.farm_id === farmId);
+    if (predsForFarm.length > 0) {
+      const latest = predsForFarm[predsForFarm.length - 1];
+      setExpandedRows(prev => Array.from(new Set([...prev, latest.id])));
+    }
+  };
+
   const getRiskBadge = (risk) => {
     if (risk >= 60) return { bg: '#fed7d7', color: '#c53030', label: 'HIGH' };
     if (risk >= 30) return { bg: '#feebc8', color: '#c05621', label: 'MEDIUM' };
@@ -141,52 +169,83 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-content">
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ marginBottom: 8, fontSize: 28, fontWeight: 600 }}>National Crop Risk Assessment Dashboard</h2>
-        <p style={{ color: '#718096', fontSize: 14 }}>Real-time agricultural risk monitoring and decision support system for Rwanda</p>
+    <div className="dashboard-content" style={{ padding: '24px 32px', maxWidth: 1800, margin: '0 auto', background: '#f8fafc' }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid #e2e8f0' }}>
+        <h1 style={{ margin: 0, marginBottom: 8, fontSize: 32, fontWeight: 700, color: '#1a202c' }}>
+          🌾 National Crop Risk Assessment
+        </h1>
+        <p style={{ margin: 0, color: '#718096', fontSize: 15, fontWeight: 500 }}>
+          Real-time agricultural risk monitoring and decision support system for Rwanda
+        </p>
       </div>
 
-      {/* Key Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: '4px solid #3182ce' }}>
-          <div style={{ fontSize: 12, color: '#718096', fontWeight: 600, marginBottom: 4 }}>MONITORED FARMS</div>
-          <div style={{ fontSize: 32, fontWeight: 'bold', color: '#2d3748' }}>{farmCount}</div>
+      {/* Key Metrics - More compact and visual */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 36 }}>
+        <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>🚜</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Monitored Farms</div>
+          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{farmCount}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Active monitoring</div>
         </div>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: '4px solid #48bb78' }}>
-          <div style={{ fontSize: 12, color: '#718096', fontWeight: 600, marginBottom: 4 }}>RISK ASSESSMENTS</div>
-          <div style={{ fontSize: 32, fontWeight: 'bold', color: '#2d3748' }}>{predictionCount}</div>
+        
+        <div style={{ background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(72, 187, 120, 0.3)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>📊</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Risk Assessments</div>
+          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{predictionCount}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Total predictions</div>
         </div>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: '4px solid #ed8936' }}>
-          <div style={{ fontSize: 12, color: '#718096', fontWeight: 600, marginBottom: 4 }}>ACTIVE ALERTS</div>
-          <div style={{ fontSize: 32, fontWeight: 'bold', color: '#2d3748' }}>{alertCount}</div>
+        
+        <div style={{ background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(237, 137, 54, 0.3)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>⚠️</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Active Alerts</div>
+          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{alertCount}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Requiring attention</div>
         </div>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderLeft: '4px solid #805ad5' }}>
-          <div style={{ fontSize: 12, color: '#718096', fontWeight: 600, marginBottom: 4 }}>SATELLITE IMAGES</div>
-          <div style={{ fontSize: 32, fontWeight: 'bold', color: '#2d3748' }}>{satelliteCount}</div>
+        
+        <div style={{ background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(49, 130, 206, 0.3)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>🛰️</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Satellite Images</div>
+          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{satelliteCount}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Data points collected</div>
         </div>
       </div>
 
       {/* National Risk Analytics */}
       {analytics && (
-        <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: 24, borderRadius: 12, marginBottom: 32, color: '#fff' }}>
-          <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>📊 National Risk Analytics</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Avg Risk Score</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold' }}>{analytics.avgRisk}%</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Avg Yield Loss</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold' }}>{analytics.avgYieldLoss}%</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>High Risk Farms</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold' }}>{analytics.highRisk} ({analytics.riskPercentage}%)</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Disease Threats</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold' }}>{analytics.criticalDiseaseRisk}</div>
+        <div style={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+          padding: 32, 
+          borderRadius: 16, 
+          marginBottom: 36, 
+          color: '#fff',
+          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(255,255,255,0.08)', borderRadius: '50%' }}></div>
+          <div style={{ position: 'absolute', bottom: -30, left: -30, width: 150, height: 150, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }}></div>
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h3 style={{ marginBottom: 20, fontSize: 24, fontWeight: 700, letterSpacing: -0.5 }}>📊 National Risk Analytics</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
+                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Avg Risk Score</div>
+                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.avgRisk}%</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
+                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Avg Yield Loss</div>
+                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.avgYieldLoss}%</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
+                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>High Risk Farms</div>
+                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.highRisk}</div>
+                <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>({analytics.riskPercentage}% of total)</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
+                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Disease Threats</div>
+                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.criticalDiseaseRisk}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -194,38 +253,42 @@ const Dashboard = () => {
 
       {/* Advanced Intelligence Metrics */}
       {intelligenceMetrics && (
-        <div style={{ marginBottom: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+        <div style={{ marginBottom: 36, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
           {/* Time to Impact Distribution */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#2d3748' }}>⏱️ Time to Impact</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: '#4a5568' }}>🚨 Immediate (&lt; 7 days)</span>
-                <span style={{ fontSize: 18, fontWeight: 'bold', color: '#c53030' }}>{intelligenceMetrics.immediate}</span>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>⏱️</span> Time to Impact
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fee', borderRadius: 10, border: '1px solid #fecaca' }}>
+                <span style={{ fontSize: 14, color: '#7f1d1d', fontWeight: 600 }}>🚨 Immediate (&lt; 7 days)</span>
+                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#c53030' }}>{intelligenceMetrics.immediate}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: '#4a5568' }}>⚠️ Short-term (7-14 days)</span>
-                <span style={{ fontSize: 18, fontWeight: 'bold', color: '#c05621' }}>{intelligenceMetrics.shortTerm}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fef3c7', borderRadius: 10, border: '1px solid #fde68a' }}>
+                <span style={{ fontSize: 14, color: '#78350f', fontWeight: 600 }}>⚠️ Short-term (7-14 days)</span>
+                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#c05621' }}>{intelligenceMetrics.shortTerm}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: '#4a5568' }}>⏰ Medium-term (14-30 days)</span>
-                <span style={{ fontSize: 18, fontWeight: 'bold', color: '#744210' }}>{intelligenceMetrics.mediumTerm}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fef3e2', borderRadius: 10, border: '1px solid #fed7aa' }}>
+                <span style={{ fontSize: 14, color: '#7c2d12', fontWeight: 600 }}>⏰ Medium-term (14-30 days)</span>
+                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#92400e' }}>{intelligenceMetrics.mediumTerm}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: '#4a5568' }}>✅ Stable (&gt; 30 days)</span>
-                <span style={{ fontSize: 18, fontWeight: 'bold', color: '#22543d' }}>{intelligenceMetrics.stable}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#ecfdf5', borderRadius: 10, border: '1px solid #a7f3d0' }}>
+                <span style={{ fontSize: 14, color: '#064e3b', fontWeight: 600 }}>✅ Stable (&gt; 30 days)</span>
+                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#22543d' }}>{intelligenceMetrics.stable}</span>
               </div>
             </div>
           </div>
 
           {/* Prediction Confidence */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#2d3748' }}>🎯 Prediction Confidence</h3>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>🎯</span> Prediction Confidence
+            </h3>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 48, fontWeight: 'bold', color: '#3182ce' }}>{intelligenceMetrics.avgConfidence}%</div>
-              <div style={{ fontSize: 13, color: '#718096', marginBottom: 16 }}>Average Confidence Score</div>
-              <div style={{ padding: '8px 16px', background: '#ebf8ff', borderRadius: 8, display: 'inline-block' }}>
-                <span style={{ fontSize: 13, color: '#2c5282', fontWeight: 600 }}>
+              <div style={{ fontSize: 56, fontWeight: 'bold', color: '#3182ce', marginBottom: 8 }}>{intelligenceMetrics.avgConfidence}%</div>
+              <div style={{ fontSize: 14, color: '#718096', marginBottom: 20, fontWeight: 500 }}>Average Confidence Score</div>
+              <div style={{ padding: '12px 20px', background: '#ebf8ff', borderRadius: 10, display: 'inline-block', border: '1px solid #bee3f8' }}>
+                <span style={{ fontSize: 14, color: '#2c5282', fontWeight: 700 }}>
                   {intelligenceMetrics.highConfidence} High Confidence Predictions
                 </span>
               </div>
@@ -233,24 +296,26 @@ const Dashboard = () => {
           </div>
 
           {/* Impact Metrics */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#2d3748' }}>💰 National Impact</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 11, color: '#718096', marginBottom: 4 }}>Economic Loss</div>
-                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#c53030' }}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>💰</span> National Impact
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ padding: 16, background: '#fef2f2', borderRadius: 10, border: '1px solid #fecaca' }}>
+                <div style={{ fontSize: 12, color: '#7f1d1d', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Economic Loss</div>
+                <div style={{ fontSize: 26, fontWeight: 'bold', color: '#c53030' }}>
                   ${parseInt(intelligenceMetrics.totalEconomicLoss).toLocaleString()}
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: 11, color: '#718096', marginBottom: 4 }}>Yield Loss (tons)</div>
-                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#c05621' }}>
+              <div style={{ padding: 16, background: '#fff7ed', borderRadius: 10, border: '1px solid #fed7aa' }}>
+                <div style={{ fontSize: 12, color: '#7c2d12', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Yield Loss</div>
+                <div style={{ fontSize: 26, fontWeight: 'bold', color: '#c05621' }}>
                   {parseFloat(intelligenceMetrics.totalYieldLoss).toLocaleString()} tons
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: 11, color: '#718096', marginBottom: 4 }}>Food Security Impact</div>
-                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#744210' }}>
+              <div style={{ padding: 16, background: '#fef3e2', borderRadius: 10, border: '1px solid #fde68a' }}>
+                <div style={{ fontSize: 12, color: '#78350f', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Food Security Impact</div>
+                <div style={{ fontSize: 26, fontWeight: 'bold', color: '#92400e' }}>
                   {parseInt(intelligenceMetrics.totalMealsLost).toLocaleString()} meals
                 </div>
               </div>
@@ -261,23 +326,28 @@ const Dashboard = () => {
 
       {/* Top Risk Drivers */}
       {intelligenceMetrics && intelligenceMetrics.topDrivers.length > 0 && (
-        <div style={{ background: '#fff', padding: 24, borderRadius: 12, marginBottom: 32, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>🔍 Most Common Risk Drivers Nationwide</h3>
+        <div style={{ background: '#fff', padding: 28, borderRadius: 16, marginBottom: 36, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ marginBottom: 20, fontSize: 20, fontWeight: 700, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>🔍</span> Most Common Risk Drivers Nationwide
+          </h3>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {intelligenceMetrics.topDrivers.map(([driver, count]) => (
               <div key={driver} style={{ 
-                flex: '1 1 200px',
-                padding: '16px 20px',
+                flex: '1 1 220px',
+                padding: '20px 24px',
                 background: 'linear-gradient(135deg, #f6f8fa 0%, #edf2f7 100%)',
-                borderRadius: 8,
-                borderLeft: '4px solid #3182ce'
+                borderRadius: 12,
+                borderLeft: '4px solid #3182ce',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
               }}>
-                <div style={{ fontSize: 13, color: '#718096', marginBottom: 4 }}>
+                <div style={{ fontSize: 14, color: '#4a5568', marginBottom: 8, fontWeight: 600 }}>
                   {formatDriverName(driver)}
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#2d3748' }}>
-                  {count} <span style={{ fontSize: 14, fontWeight: 'normal', color: '#718096' }}>farms affected</span>
+                <div style={{ fontSize: 28, fontWeight: 'bold', color: '#2d3748' }}>
+                  {count}
                 </div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: '#718096', marginTop: 4 }}>farms affected</div>
               </div>
             ))}
           </div>
@@ -286,87 +356,100 @@ const Dashboard = () => {
 
       {/* Risk Distribution */}
       {analytics && (
-        <div style={{ background: '#fff', padding: 24, borderRadius: 12, marginBottom: 32, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>Risk Distribution Across Monitored Farms</h3>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', height: 200 }}>
+        <div style={{ background: '#fff', padding: 28, borderRadius: 16, marginBottom: 36, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ marginBottom: 24, fontSize: 20, fontWeight: 700, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>📊</span> Risk Distribution Across Monitored Farms
+          </h3>
+          <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', height: 240 }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ 
-                background: '#c6f6d5', 
-                height: `${(analytics.lowRisk / predictionCount) * 200}px`, 
-                borderRadius: '8px 8px 0 0',
+                background: 'linear-gradient(to top, #48bb78, #68d391)', 
+                height: `${Math.max((analytics.lowRisk / predictionCount) * 240, 50)}px`, 
+                borderRadius: '12px 12px 0 0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 'bold',
-                fontSize: 24,
-                color: '#22543d',
-                minHeight: 40
+                fontSize: 32,
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(72, 187, 120, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
-                {analytics.lowRisk}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'rgba(255,255,255,0.2)' }}></div>
+                <span style={{ position: 'relative', zIndex: 1 }}>{analytics.lowRisk}</span>
               </div>
-              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: '#22543d' }}>LOW RISK</div>
-              <div style={{ fontSize: 11, color: '#718096' }}>&lt; 30%</div>
+              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: '#22543d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Low Risk</div>
+              <div style={{ fontSize: 12, color: '#718096', marginTop: 4, fontWeight: 500 }}>&lt; 30%</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ 
-                background: '#feebc8', 
-                height: `${(analytics.mediumRisk / predictionCount) * 200}px`, 
-                borderRadius: '8px 8px 0 0',
+                background: 'linear-gradient(to top, #ed8936, #f6ad55)', 
+                height: `${Math.max((analytics.mediumRisk / predictionCount) * 240, 50)}px`, 
+                borderRadius: '12px 12px 0 0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 'bold',
-                fontSize: 24,
-                color: '#c05621',
-                minHeight: 40
+                fontSize: 32,
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(237, 137, 54, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
-                {analytics.mediumRisk}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'rgba(255,255,255,0.2)' }}></div>
+                <span style={{ position: 'relative', zIndex: 1 }}>{analytics.mediumRisk}</span>
               </div>
-              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: '#c05621' }}>MEDIUM RISK</div>
-              <div style={{ fontSize: 11, color: '#718096' }}>30-60%</div>
+              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: '#c05621', textTransform: 'uppercase', letterSpacing: 0.5 }}>Medium Risk</div>
+              <div style={{ fontSize: 12, color: '#718096', marginTop: 4, fontWeight: 500 }}>30-60%</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ 
-                background: '#fed7d7', 
-                height: `${(analytics.highRisk / predictionCount) * 200}px`, 
-                borderRadius: '8px 8px 0 0',
+                background: 'linear-gradient(to top, #e53e3e, #fc8181)', 
+                height: `${Math.max((analytics.highRisk / predictionCount) * 240, 50)}px`, 
+                borderRadius: '12px 12px 0 0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 'bold',
-                fontSize: 24,
-                color: '#c53030',
-                minHeight: 40
+                fontSize: 32,
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(229, 62, 62, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
-                {analytics.highRisk}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'rgba(255,255,255,0.2)' }}></div>
+                <span style={{ position: 'relative', zIndex: 1 }}>{analytics.highRisk}</span>
               </div>
-              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: '#c53030' }}>HIGH RISK</div>
-              <div style={{ fontSize: 11, color: '#718096' }}>&gt; 60%</div>
+              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: '#c53030', textTransform: 'uppercase', letterSpacing: 0.5 }}>High Risk</div>
+              <div style={{ fontSize: 12, color: '#718096', marginTop: 4, fontWeight: 500 }}>&gt; 60%</div>
             </div>
           </div>
         </div>
       )}
 
-      <div style={{marginTop: 32, display: 'flex', gap: 24, flexWrap: 'wrap'}}>
-        <div style={{flex: 2, minWidth: 400}}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 600 }}>Recent Risk Assessments</h3>
-            <span style={{ fontSize: 12, color: '#718096' }}>Last 10 predictions</span>
+      <div style={{marginTop: 0, display: 'flex', gap: 28, flexWrap: 'wrap'}}>
+        <div style={{flex: 2, minWidth: 500}}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>📋</span> Recent Risk Assessments
+            </h3>
+            <span style={{ fontSize: 13, color: '#718096', fontWeight: 500 }}>Last 10 predictions</span>
           </div>
-          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
             <table style={{width: '100%', borderCollapse: 'collapse'}}>
               <thead>
-                <tr style={{background: '#f7fafc', borderBottom: '2px solid #e2e8f0'}}>
-                  <th style={{padding: 12, textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>FARM</th>
-                  <th style={{padding: 12, textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>RISK</th>
-                  <th style={{padding: 12, textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>TIME</th>
-                  <th style={{padding: 12, textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>CONF.</th>
-                  <th style={{padding: 12, textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>DRIVERS</th>
+                <tr style={{background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', borderBottom: '2px solid #cbd5e0'}}>
+                  <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Farm</th>
+                  <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Risk</th>
+                  <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Time</th>
+                  <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Conf.</th>
+                  <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Drivers</th>
                 </tr>
               </thead>
               <tbody>
                 {recentPredictions.length === 0 && (
-                  <tr><td colSpan={5} style={{padding: 24, textAlign: 'center', color: '#a0aec0'}}>No risk assessments available.</td></tr>
+                  <tr><td colSpan={5} style={{padding: 32, textAlign: 'center', color: '#a0aec0', fontSize: 14}}>No risk assessments available.</td></tr>
                 )}
                 {recentPredictions.map((pred, idx) => {
                   const badge = getRiskBadge(pred.risk_score);
@@ -379,72 +462,76 @@ const Dashboard = () => {
                     <tr 
                       key={pred.id} 
                       style={{
-                        borderBottom: '1px solid #f7fafc', 
-                        background: idx % 2 === 0 ? '#fff' : '#fafafa',
-                        cursor: 'pointer'
+                        borderBottom: '1px solid #edf2f7', 
+                        background: idx % 2 === 0 ? '#fff' : '#f9fafb',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
                       }}
                       onClick={() => {
-                        // Expand to show details
-                        const row = document.getElementById(`detail-${pred.id}`);
-                        if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+                        // select farm and toggle details
+                        setSelectedFarmId(pred.farm_id);
+                        toggleRow(pred.id);
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#f0f4f8'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#f9fafb'}
                     >
-                      <td style={{padding: 12, fontWeight: 600}}>
-                        <div>#{pred.farm_id}</div>
-                        <div style={{ fontSize: 10, color: '#718096' }}>{formatDate(pred.predicted_at)}</div>
+                      <td style={{padding: '16px 20px', fontWeight: 600, fontSize: 14, color: '#2d3748', background: selectedFarmId === pred.farm_id ? '#fffbe6' : 'inherit' }}>
+                        <div style={{ marginBottom: 4 }}>Farm #{pred.farm_id}</div>
+                        <div style={{ fontSize: 11, color: '#a0aec0', fontWeight: 500 }}>{formatDate(pred.predicted_at)}</div>
                       </td>
-                      <td style={{padding: 12}}>
-                        <div style={{ marginBottom: 4 }}>
-                          <span style={{
-                            padding: '4px 12px',
-                            borderRadius: 12,
-                            fontSize: 11,
-                            fontWeight: 'bold',
-                            background: badge.bg,
-                            color: badge.color
-                          }}>
-                            {pred.risk_score.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div style={{ fontSize: 10, color: '#718096' }}>
+                      <td style={{padding: '16px 20px'}}>
+                        <span style={{
+                          padding: '6px 14px',
+                          borderRadius: 20,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          background: badge.bg,
+                          color: badge.color,
+                          display: 'inline-block'
+                        }}>
+                          {pred.risk_score.toFixed(1)}%
+                        </span>
+                        <div style={{ fontSize: 11, color: '#a0aec0', marginTop: 6, fontWeight: 500 }}>
                           Yield: {pred.yield_loss ? pred.yield_loss.toFixed(1) + '%' : '-'}
                         </div>
                       </td>
-                      <td style={{padding: 12}}>
+                      <td style={{padding: '16px 20px'}}>
                         {timeBadge && (
                           <span style={{
-                            padding: '4px 8px',
-                            borderRadius: 8,
-                            fontSize: 10,
-                            fontWeight: 'bold',
+                            padding: '6px 12px',
+                            borderRadius: 20,
+                            fontSize: 11,
+                            fontWeight: 700,
                             background: timeBadge.bg,
                             color: timeBadge.color,
-                            whiteSpace: 'nowrap'
+                            whiteSpace: 'nowrap',
+                            display: 'inline-block'
                           }}>
                             {timeBadge.icon} {timeBadge.label}
                           </span>
                         )}
                       </td>
-                      <td style={{padding: 12}}>
+                      <td style={{padding: '16px 20px'}}>
                         {confBadge && (
                           <div>
                             <span style={{
-                              padding: '3px 8px',
-                              borderRadius: 6,
-                              fontSize: 10,
-                              fontWeight: 'bold',
+                              padding: '5px 12px',
+                              borderRadius: 16,
+                              fontSize: 11,
+                              fontWeight: 700,
                               background: confBadge.bg,
-                              color: confBadge.color
+                              color: confBadge.color,
+                              display: 'inline-block'
                             }}>
                               {confBadge.label}
                             </span>
-                            <div style={{ fontSize: 10, color: '#718096', marginTop: 2 }}>
+                            <div style={{ fontSize: 11, color: '#a0aec0', marginTop: 6, fontWeight: 500 }}>
                               {pred.confidence_score?.toFixed(0)}%
                             </div>
                           </div>
                         )}
                       </td>
-                      <td style={{padding: 12, fontSize: 11, color: '#4a5568'}}>
+                      <td style={{padding: '16px 20px', fontSize: 12, color: '#4a5568', fontWeight: 500}}>
                         {topDriver ? (
                           <div>
                             <div style={{ fontWeight: 600 }}>{formatDriverName(topDriver[0])}</div>
@@ -459,7 +546,7 @@ const Dashboard = () => {
                   <tr 
                     key={`detail-${pred.id}`}
                     id={`detail-${pred.id}`}
-                    style={{ display: 'none', background: '#f7fafc' }}
+                    style={{ display: expandedRows.includes(pred.id) ? 'table-row' : 'none', background: '#f7fafc' }}
                   >
                     <td colSpan={5} style={{ padding: 16 }}>
                       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
@@ -530,17 +617,39 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-        <div style={{flex: 1, minWidth: 300}}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 600 }}>Priority Alerts</h3>
-            <span style={{ fontSize: 12, color: '#718096' }}>Real-time</span>
+        <div style={{flex: 1, minWidth: 380, display: 'flex', flexDirection: 'column', gap: 20}}>
+          {/* Map Section */}
+          <div style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+            <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', borderBottom: '2px solid #cbd5e0' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a202c', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🗺️</span> Farm Locations
+              </h3>
+            </div>
+            <div style={{ height: 420 }}>
+              <MapPanel
+                farms={farmsList}
+                predictions={allPredictions}
+                selectedFarmId={selectedFarmId}
+                onSelectFarm={(id) => handleSelectFarm(id)}
+                filters={{ ...filters, onChange: (f) => setFilters(f) }}
+              />
+            </div>
           </div>
-          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', maxHeight: 600, overflowY: 'auto' }}>
-            {recentAlerts.length === 0 && (
-              <div style={{ padding: 24, textAlign: 'center', color: '#a0aec0' }}>No alerts available.</div>
-            )}
-            {recentAlerts.map((alert, idx) => {
-              let bgColor = '#ebf8ff', borderColor = '#3182ce', icon = '\u2139\ufe0f';
+
+          {/* Alerts Section */}
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', borderBottom: '2px solid #cbd5e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a202c', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>⚠️</span> Priority Alerts
+              </h3>
+              <span style={{ fontSize: 12, color: '#718096', fontWeight: 600, background: '#fff', padding: '4px 12px', borderRadius: 12 }}>Real-time</span>
+            </div>
+            <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+              {recentAlerts.length === 0 && (
+                <div style={{ padding: 32, textAlign: 'center', color: '#a0aec0', fontSize: 14 }}>No alerts available.</div>
+              )}
+              {recentAlerts.map((alert, idx) => {
+                let bgColor = '#ebf8ff', borderColor = '#3182ce', icon = '\u2139\ufe0f';
               if (alert.level === 'warning') {
                 bgColor = '#fffaf0';
                 borderColor = '#ed8936';
@@ -552,66 +661,78 @@ const Dashboard = () => {
               }
               return (
                 <div key={alert.id} style={{
-                  padding: 16,
-                  borderBottom: idx < recentAlerts.length - 1 ? '1px solid #f7fafc' : 'none',
+                  padding: 20,
+                  borderBottom: idx < recentAlerts.length - 1 ? '1px solid #edf2f7' : 'none',
                   borderLeft: `4px solid ${borderColor}`,
-                  background: bgColor
+                  background: bgColor,
+                  transition: 'all 0.2s'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, fontSize: 13 }}>{icon} Farm #{alert.farm_id}</span>
-                    <span style={{ fontSize: 11, color: '#718096' }}>{formatDate(alert.created_at)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: '#2d3748' }}>{icon} Farm #{alert.farm_id}</span>
+                    <span style={{ fontSize: 11, color: '#a0aec0', fontWeight: 500 }}>{formatDate(alert.created_at)}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: '#4a5568', lineHeight: 1.5 }}>{alert.message}</div>
-                  <div style={{ marginTop: 8 }}>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: 8,
-                      fontSize: 10,
-                      fontWeight: 'bold',
-                      textTransform: 'uppercase',
-                      background: borderColor,
-                      color: '#fff'
-                    }}>
-                      {alert.level}
-                    </span>
-                  </div>
+                  <div style={{ fontSize: 13, color: '#4a5568', lineHeight: 1.6, marginBottom: 10 }}>{alert.message}</div>
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: 12,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                    background: borderColor,
+                    color: '#fff',
+                    display: 'inline-block'
+                  }}>
+                    {alert.level}
+                  </span>
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Action Items */}
-      <div style={{ marginTop: 32, background: '#fffaf0', borderLeft: '4px solid #dd6b20', padding: 20, borderRadius: 8 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: '#7c2d12' }}>📋 Recommended Actions</h3>
-        <ul style={{ margin: 0, paddingLeft: 20, color: '#744210' }}>
+      <div style={{ 
+        marginTop: 36, 
+        background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', 
+        borderLeft: '6px solid #f59e0b', 
+        padding: 28, 
+        borderRadius: 16,
+        boxShadow: '0 4px 16px rgba(245, 158, 11, 0.15)',
+        border: '1px solid #fde68a'
+      }}>
+        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: '#78350f', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>📋</span> Recommended Actions
+        </h3>
+        <ul style={{ margin: 0, paddingLeft: 24, color: '#92400e', lineHeight: 1.8 }}>
           {intelligenceMetrics && intelligenceMetrics.immediate > 0 && (
-            <li style={{ marginBottom: 8 }}>
-              <strong>🚨 URGENT:</strong> {intelligenceMetrics.immediate} farms require immediate intervention (impact expected within 7 days)
+            <li style={{ marginBottom: 12, fontSize: 14, fontWeight: 500 }}>
+              <strong style={{ color: '#dc2626' }}>🚨 URGENT:</strong> {intelligenceMetrics.immediate} farms require immediate intervention (impact expected within 7 days)
             </li>
           )}
           {intelligenceMetrics && intelligenceMetrics.shortTerm > 0 && (
-            <li style={{ marginBottom: 8 }}>
-              <strong>⚠️ HIGH PRIORITY:</strong> {intelligenceMetrics.shortTerm} farms at risk in 7-14 days - prepare field deployment
+            <li style={{ marginBottom: 12, fontSize: 14, fontWeight: 500 }}>
+              <strong style={{ color: '#ea580c' }}>⚠️ HIGH PRIORITY:</strong> {intelligenceMetrics.shortTerm} farms at risk in 7-14 days - prepare field deployment
             </li>
           )}
           {analytics && analytics.highRisk > 0 && (
-            <li style={{ marginBottom: 8 }}>
+            <li style={{ marginBottom: 12, fontSize: 14, fontWeight: 500 }}>
               <strong>{analytics.highRisk} farms</strong> are at high risk - immediate intervention recommended
             </li>
           )}
           {intelligenceMetrics && parseFloat(intelligenceMetrics.totalEconomicLoss) > 50000 && (
-            <li style={{ marginBottom: 8 }}>
+            <li style={{ marginBottom: 12, fontSize: 14, fontWeight: 500 }}>
               Projected economic loss of <strong>${parseInt(intelligenceMetrics.totalEconomicLoss).toLocaleString()}</strong> - consider emergency agricultural support programs
             </li>
           )}
           {intelligenceMetrics && intelligenceMetrics.topDrivers.length > 0 && (
-            <li style={{ marginBottom: 8 }}>
+            <li style={{ marginBottom: 12, fontSize: 14, fontWeight: 500 }}>
               Primary threat: <strong>{formatDriverName(intelligenceMetrics.topDrivers[0][0])}</strong> affecting {intelligenceMetrics.topDrivers[0][1]} farms - deploy targeted interventions
             </li>
           )}
-          <li>Monitor satellite imagery for vegetation health changes across all districts</li>
+          <li style={{ fontSize: 14, fontWeight: 500 }}>Monitor satellite imagery for vegetation health changes across all districts</li>
         </ul>
       </div>
     </div>

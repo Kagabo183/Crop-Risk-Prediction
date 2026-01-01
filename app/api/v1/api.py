@@ -1,5 +1,5 @@
 ﻿from fastapi import APIRouter
-from app.api.v1.endpoints import users, predictions, farms, alerts, auth, features, satellite, predict, satellite_images
+from app.api.v1.endpoints import users, predictions, farms, alerts, auth, features, satellite, predict, satellite_images, farm_satellite
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(features.router, prefix="/features", tags=["features"]
 api_router.include_router(satellite.router, prefix="/satellite", tags=["satellite"])
 api_router.include_router(satellite_images.router, prefix="/satellite-images", tags=["satellite-images"])
 api_router.include_router(predict.router, prefix="/predict", tags=["predict"])
+api_router.include_router(farm_satellite.router, prefix="/farm-satellite", tags=["farm-satellite"])

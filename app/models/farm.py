@@ -8,3 +8,5 @@ class Farm(Base):
     location = Column(String, nullable=True)
     area = Column(Float, nullable=True)  # in hectares
     owner_id = Column(Integer, nullable=True)  # FK to User, can be set up later
+    latitude = Column(Float, nullable=True)  # GPS latitude
+    longitude = Column(Float, nullable=True)  # GPS longitude
