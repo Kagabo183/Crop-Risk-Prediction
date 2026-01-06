@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSatelliteImageCount, fetchFarms, fetchPredictions, fetchAlerts } from '../api';
+import { fetchSatelliteImageCount, fetchFarms, fetchAlerts, fetchDashboardMetrics, fetchEnrichedPredictions } from '../api';
 import MapPanel from './MapPanel';
 import './Dashboard.css';
 
@@ -28,77 +28,55 @@ const Dashboard = () => {
         setFarmsList(farms);
       })
       .catch(() => setFarmCount('Error'));
-    fetchPredictions()
+    
+    // Fetch enriched predictions with intelligence metrics
+    fetchEnrichedPredictions()
       .then(preds => {
-        console.log('Predictions:', preds);
+        console.log('Enriched Predictions:', preds);
         setPredictionCount(preds.length);
         setAllPredictions(preds);
         setRecentPredictions(preds.slice(-10).reverse());
-        
-        // Calculate analytics for national-level insights
-        if (preds.length > 0) {
-          const avgRisk = preds.reduce((sum, p) => sum + p.risk_score, 0) / preds.length;
-          const avgYieldLoss = preds.reduce((sum, p) => sum + (p.yield_loss || 0), 0) / preds.length;
-          const highRisk = preds.filter(p => p.risk_score >= 60).length;
-          const mediumRisk = preds.filter(p => p.risk_score >= 30 && p.risk_score < 60).length;
-          const lowRisk = preds.filter(p => p.risk_score < 30).length;
-          const criticalDiseaseRisk = preds.filter(p => p.disease_risk === 'Critical' || p.disease_risk === 'High').length;
-          
-          // Advanced intelligence metrics
-          const immediate = preds.filter(p => p.time_to_impact === '< 7 days').length;
-          const shortTerm = preds.filter(p => p.time_to_impact === '7-14 days').length;
-          const mediumTerm = preds.filter(p => p.time_to_impact === '14-30 days').length;
-          const stable = preds.filter(p => p.time_to_impact === '> 30 days (Stable)').length;
-          
-          const avgConfidence = preds.reduce((sum, p) => sum + (p.confidence_score || 0), 0) / preds.length;
-          const highConfidence = preds.filter(p => p.confidence_level === 'High').length;
-          
-          const totalEconomicLoss = preds.reduce((sum, p) => sum + (p.impact_metrics?.economic_loss_usd || 0), 0);
-          const totalYieldLoss = preds.reduce((sum, p) => sum + (p.impact_metrics?.yield_loss_tons || 0), 0);
-          const totalMealsLost = preds.reduce((sum, p) => sum + (p.impact_metrics?.meals_lost || 0), 0);
-          
-          // Top risk drivers across all predictions
-          const driverCounts = {};
-          preds.forEach(p => {
-            if (p.risk_drivers) {
-              Object.keys(p.risk_drivers).forEach(driver => {
-                driverCounts[driver] = (driverCounts[driver] || 0) + 1;
-              });
-            }
-          });
-          const topDrivers = Object.entries(driverCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
-          
-          setAnalytics({
-            avgRisk: avgRisk.toFixed(1),
-            avgYieldLoss: avgYieldLoss.toFixed(1),
-            highRisk,
-            mediumRisk,
-            lowRisk,
-            criticalDiseaseRisk,
-            riskPercentage: ((highRisk / preds.length) * 100).toFixed(1)
-          });
-          
-          setIntelligenceMetrics({
-            immediate,
-            shortTerm,
-            mediumTerm,
-            stable,
-            avgConfidence: avgConfidence.toFixed(1),
-            highConfidence,
-            totalEconomicLoss: totalEconomicLoss.toFixed(0),
-            totalYieldLoss: totalYieldLoss.toFixed(1),
-            totalMealsLost: totalMealsLost.toFixed(0),
-            topDrivers
-          });
-        }
       })
       .catch((err) => {
-        console.error('Prediction fetch error:', err);
+        console.error('Enriched prediction fetch error:', err);
         setPredictionCount('Error');
         setRecentPredictions([]);
       });
+    
+    // Fetch dashboard metrics
+    fetchDashboardMetrics()
+      .then(metrics => {
+        console.log('Dashboard Metrics:', metrics);
+        
+        // Set analytics from metrics
+        setAnalytics({
+          avgRisk: ((metrics.risk_distribution.high * 80 + metrics.risk_distribution.medium * 45 + metrics.risk_distribution.low * 15) / metrics.total_predictions || 0).toFixed(1),
+          avgYieldLoss: (metrics.national_impact.yield_loss_tons / metrics.total_predictions || 0).toFixed(1),
+          highRisk: metrics.risk_distribution.high,
+          mediumRisk: metrics.risk_distribution.medium,
+          lowRisk: metrics.risk_distribution.low,
+          criticalDiseaseRisk: metrics.risk_distribution.high,
+          riskPercentage: ((metrics.risk_distribution.high / metrics.total_predictions * 100) || 0).toFixed(1)
+        });
+        
+        // Set intelligence metrics
+        setIntelligenceMetrics({
+          immediate: metrics.time_to_impact.immediate,
+          shortTerm: metrics.time_to_impact.short_term,
+          mediumTerm: metrics.time_to_impact.medium_term,
+          stable: metrics.time_to_impact.stable,
+          avgConfidence: metrics.confidence.average,
+          highConfidence: metrics.confidence.high_confidence_count,
+          totalEconomicLoss: metrics.national_impact.economic_loss_usd.toFixed(0),
+          totalYieldLoss: metrics.national_impact.yield_loss_tons.toFixed(1),
+          totalMealsLost: metrics.national_impact.meals_lost.toFixed(0),
+          topDrivers: metrics.top_risk_drivers.map(d => [d.name, d.count])
+        });
+      })
+      .catch((err) => {
+        console.error('Dashboard metrics fetch error:', err);
+      });
+    
     fetchAlerts()
       .then(alerts => {
         setAlertCount(alerts.length);

@@ -3,17 +3,212 @@
   min-height: 100vh;
   background: #f7fafc;
 }
+
 .dashboard-widgets {
   display: flex;
   gap: 24px;
   margin-top: 24px;
+  flex-wrap: wrap;
 }
+
 .widget {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 24px 32px;
+  padding: 24px;
   min-width: 180px;
-  font-size: 1.2rem;
-  color: #1a2732;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.widget:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.widget--alert {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.widget-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.widget-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.widget-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #111827;
+  line-height: 1;
+}
+
+.widget-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-section {
+  margin-top: 32px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.dashboard-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #111827;
+}
+
+.disease-risk-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.disease-risk-card {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.disease-risk-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.disease-risk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.disease-rank {
+  background: #3b82f6;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.disease-risk-body h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #111827;
+}
+
+.disease-risk-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #6b7280;
+}
+
+.disease-risk-stat .value {
+  font-weight: bold;
+  color: #111827;
+}
+
+.disease-action {
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #78350f;
+  margin-top: 12px;
+}
+
+.disease-risk-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.disease-risk-footer a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.disease-risk-footer a:hover {
+  text-decoration: underline;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111827;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-icon {
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 96px 16px 16px 16px;
+  }
+
+  .dashboard-widgets {
+    flex-direction: column;
+  }
+
+  .widget {
+    width: 100%;
+  }
+
+  .disease-risk-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
 }

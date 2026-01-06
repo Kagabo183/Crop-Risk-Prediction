@@ -4,19 +4,43 @@ const GOOGLE_MAPS_API_KEY = 'AIzaSyAa3_gwS8sCKhxT5SnuyK-CHcz0SBLCViM';
 
 function loadGoogleMaps(apiKey) {
   return new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) return resolve(window.google.maps);
-    const id = `google-maps-script`;
-    if (document.getElementById(id)) {
-      document.getElementById(id).addEventListener('load', () => resolve(window.google.maps));
+    // Check if already loaded
+    if (window.google && window.google.maps) {
+      return resolve(window.google.maps);
+    }
+    
+    const id = 'google-maps-script';
+    const existingScript = document.getElementById(id);
+    
+    if (existingScript) {
+      // Script already loading, wait for it
+      const checkLoaded = setInterval(() => {
+        if (window.google && window.google.maps) {
+          clearInterval(checkLoaded);
+          resolve(window.google.maps);
+        }
+      }, 100);
+      setTimeout(() => {
+        clearInterval(checkLoaded);
+        reject(new Error('Google Maps loading timeout'));
+      }, 10000);
       return;
     }
+    
+    // Create and load script
     const script = document.createElement('script');
     script.id = id;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
     script.async = true;
     script.defer = true;
-    script.onload = () => resolve(window.google.maps);
-    script.onerror = reject;
+    script.onload = () => {
+      if (window.google && window.google.maps) {
+        resolve(window.google.maps);
+      } else {
+        reject(new Error('Google Maps failed to load'));
+      }
+    };
+    script.onerror = (error) => reject(error);
     document.head.appendChild(script);
   });
 }
@@ -43,21 +67,30 @@ const MapPanel = ({ farms = [], predictions = [], selectedFarmId, onSelectFarm, 
         gestureHandling: 'greedy',
         mapTypeControl: true,
         mapTypeControlOptions: {
-          style: maps.MapTypeControlStyle.HORIZONTAL_BAR,
-          position: maps.ControlPosition.TOP_RIGHT
+          style: maps.MapTypeControlStyle?.HORIZONTAL_BAR || 0,
+          position: maps.ControlPosition?.TOP_RIGHT || 2
         }
       });
       infoWindowRef.current = new maps.InfoWindow();
       renderMarkers();
-    }).catch((err) => console.error('Google Maps load error', err));
+    }).catch((err) => {
+      console.error('Google Maps load error:', err);
+      // Fallback: initialize without map controls if Maps API fails
+    });
     
-    // Fetch satellite data
+    // Fetch satellite data with error handling
     fetch('http://localhost:8000/api/v1/farm-satellite/')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (mounted) setSatelliteData(data);
       })
-      .catch(err => console.error('Error fetching satellite data', err));
+      .catch(err => {
+        console.error('Error fetching satellite data:', err.message);
+        // Don't break the app if satellite data fails
+      });
     
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps

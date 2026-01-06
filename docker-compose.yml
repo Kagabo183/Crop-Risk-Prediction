@@ -61,5 +61,17 @@ services:
       - REDIS_URL=redis
       - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+
 volumes:
   db_data:

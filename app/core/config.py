@@ -28,6 +28,19 @@ class Settings(BaseSettings):
     # External APIs
     SENTINEL_API_KEY: Optional[str] = None
     WEATHER_API_KEY: Optional[str] = None
+    
+    # Weather Data Sources
+    ERA5_API_URL: Optional[str] = None  # ECMWF/Copernicus Climate Data Store API URL
+    ERA5_API_KEY: Optional[str] = None  # ECMWF/Copernicus Climate Data Store
+    NOAA_API_KEY: Optional[str] = None  # NOAA Climate Data Online
+    IBM_EIS_API_KEY: Optional[str] = None  # IBM Environmental Intelligence Suite
+    LOCAL_STATION_URL: Optional[str] = None  # Local meteorological station API
+    
+    # Disease Prediction Settings
+    DISEASE_FORECAST_DAYS: int = 7  # Default forecast horizon
+    DISEASE_MODEL_VERSION: str = "v1.0"
+    ENABLE_DAILY_FORECASTS: bool = True
+    ENABLE_WEEKLY_SUMMARIES: bool = True
 
     # Email (for alerts)
     SMTP_HOST: Optional[str] = None

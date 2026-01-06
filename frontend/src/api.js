@@ -32,6 +32,97 @@ export async function getTaskStatus(taskId) {
   if (!res.ok) throw new Error('Failed to fetch task status');
   return res.json();
 }
+
+// ========== Disease Prediction API ==========
+
+export async function fetchDiseases() {
+  const res = await fetch(`${API_BASE}/diseases/`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch diseases');
+  return res.json();
+}
+
+export async function predictDisease(farmId, diseaseName, cropType, forecastDays = 7) {
+  const res = await fetch(`${API_BASE}/diseases/predict`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({
+      farm_id: farmId,
+      disease_name: diseaseName,
+      crop_type: cropType,
+      forecast_days: forecastDays
+    })
+  });
+  if (!res.ok) throw new Error('Failed to predict disease');
+  return res.json();
+}
+
+export async function fetchDailyForecast(farmId, diseaseName, days = 7) {
+  const params = new URLSearchParams({ days: days.toString() });
+  if (diseaseName) params.append('disease_name', diseaseName);
+  
+  const res = await fetch(`${API_BASE}/diseases/forecast/daily/${farmId}?${params}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch daily forecast');
+  return res.json();
+}
+
+export async function fetchWeeklyForecast(farmId, diseaseName) {
+  const params = new URLSearchParams();
+  if (diseaseName) params.append('disease_name', diseaseName);
+  
+  const res = await fetch(`${API_BASE}/diseases/forecast/weekly/${farmId}?${params}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch weekly forecast');
+  return res.json();
+}
+
+export async function fetchDiseaseStatistics(farmId, diseaseName, days = 30) {
+  const params = new URLSearchParams({ days: days.toString() });
+  if (diseaseName) params.append('disease_name', diseaseName);
+  
+  const res = await fetch(`${API_BASE}/diseases/statistics/${farmId}?${params}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch disease statistics');
+  return res.json();
+}
+
+export async function fetchDiseasePredictions(farmId, diseaseName, limit = 10) {
+  const params = new URLSearchParams({ limit: limit.toString() });
+  if (farmId) params.append('farm_id', farmId);
+  if (diseaseName) params.append('disease_name', diseaseName);
+  
+  const res = await fetch(`${API_BASE}/diseases/predictions/?${params}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch disease predictions');
+  return res.json();
+}
+
+export async function submitDiseaseObservation(farmId, diseaseName, severity, notes = '') {
+  const res = await fetch(`${API_BASE}/diseases/observations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({
+      farm_id: farmId,
+      disease_name: diseaseName,
+      severity,
+      notes
+    })
+  });
+  if (!res.ok) throw new Error('Failed to submit observation');
+  return res.json();
+}
 // Simple API utility for backend requests
 const API_BASE = 'http://localhost:8000/api/v1';
 
@@ -69,5 +160,23 @@ export async function fetchUsers() {
     headers: { ...getAuthHeaders() }
   });
   if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json();
+}
+
+// ========== Analytics API ==========
+
+export async function fetchDashboardMetrics() {
+  const res = await fetch(`${API_BASE}/analytics/dashboard-metrics`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch dashboard metrics');
+  return res.json();
+}
+
+export async function fetchEnrichedPredictions() {
+  const res = await fetch(`${API_BASE}/analytics/predictions-enriched`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch enriched predictions');
   return res.json();
 }
