@@ -20,6 +20,11 @@ celery_app.conf.beat_schedule = {
         'task': 'app.tasks.process_tasks.scan_and_enqueue',
         'schedule': 600.0,
         'args': (),
+    },
+    'auto-fetch-data-daily': {
+        'task': 'app.tasks.process_tasks.auto_fetch_daily_data',
+        'schedule': 86400.0,  # Run once per day (24 hours)
+        'args': (),
     }
 }
 

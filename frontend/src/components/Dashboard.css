@@ -1,151 +1,485 @@
 .dashboard-content {
-  padding: 96px 32px 32px 240px;
-  min-height: 100vh;
-  background: #f7fafc;
+  padding: var(--space-xl);
+  min-height: calc(100vh - 70px);
+  background: #f8f9fa;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dashboard-header {
+  margin-bottom: var(--space-2xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 2px solid #e9ecef;
+}
+
+.dashboard-header h1 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 var(--space-sm) 0;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-header p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin: 0;
 }
 
 .dashboard-widgets {
-  display: flex;
-  gap: 24px;
-  margin-top: 24px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
 }
 
 .widget {
-  background: #fff;
+  background: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 24px;
-  min-width: 180px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: var(--space-lg);
   display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: all 0.3s ease;
+  align-items: flex-start;
+  gap: var(--space-md);
+  transition: all 0.2s ease;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid #dee2e6;
 }
 
 .widget:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
 }
 
-.widget--alert {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border-left: 4px solid #ef4444;
+.widget--farms {
+  border-left-color: #0d6efd;
+}
+
+.widget--predictions {
+  border-left-color: #198754;
+}
+
+.widget--alerts {
+  border-left-color: #dc3545;
+}
+
+.widget--satellite {
+  border-left-color: #6c757d;
 }
 
 .widget-icon {
-  font-size: 32px;
+  font-size: 2rem;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.widget--farms .widget-icon {
+  background: #cfe2ff;
+}
+
+.widget--predictions .widget-icon {
+  background: #d1e7dd;
+}
+
+.widget--alerts .widget-icon {
+  background: #f8d7da;
+}
+
+.widget--satellite .widget-icon {
+  background: #e2e3e5;
 }
 
 .widget-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
 }
 
 .widget-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #111827;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
   line-height: 1;
 }
 
 .widget-label {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 0.875rem;
+  color: #212529;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.widget-sublabel {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+/* Analytics Section */
+.analytics-section {
+  background: white;
+  border-radius: 8px;
+  padding: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dee2e6;
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 var(--space-lg) 0;
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.analytics-card {
+  padding: var(--space-lg);
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.analytics-label {
+  font-size: 0.8125rem;
+  color: #6c757d;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.dashboard-section {
-  margin-top: 32px;
+.analytics-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.analytics-sublabel {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+/* Intelligence Grid */
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.intelligence-card {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: var(--space-xl);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dee2e6;
+}
+
+.card-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 var(--space-lg) 0;
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.impact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.impact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  border-radius: 6px;
+  border: 1px solid;
+  background: white;
+}
+
+.impact-immediate {
+  background: #fff5f5;
+  border-color: #ffc9c9;
+}
+
+.impact-short {
+  background: #fff9ed;
+  border-color: #ffe5bd;
+}
+
+.impact-medium {
+  background: #fffbf2;
+  border-color: #fff4d6;
+}
+
+.impact-stable {
+  background: #f1f8f4;
+  border-color: #c3e6cd;
+}
+
+.impact-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.impact-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.dashboard-section {
+  margin-bottom: var(--space-2xl);
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  animation: slideIn 0.3s ease-out;
 }
 
 .dashboard-section h3 {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-  color: #111827;
+  margin: 0 0 var(--space-lg) 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.section-actions {
+  display: flex;
+  gap: var(--space-sm);
 }
 
 .disease-risk-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-lg);
 }
 
 .disease-risk-card {
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.disease-risk-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .disease-risk-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-400);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.disease-risk-card:hover::before {
+  transform: scaleX(1);
 }
 
 .disease-risk-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--gray-200);
 }
 
 .disease-rank {
-  background: #3b82f6;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
   color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: var(--shadow-md);
 }
 
 .disease-risk-body h4 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  color: #111827;
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
 }
 
 .disease-risk-stat {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: var(--space-sm);
+  color: var(--gray-600);
+  padding: var(--space-xs) 0;
 }
 
 .disease-risk-stat .value {
-  font-weight: bold;
-  color: #111827;
+  font-weight: 700;
+  color: var(--gray-900);
 }
 
 .disease-action {
-  background: #fef3c7;
-  border-left: 3px solid #f59e0b;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #78350f;
-  margin-top: 12px;
+  background: var(--warning-light);
+  border-left: 4px solid var(--warning);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--gray-800);
+  margin-top: var(--space-md);
+  font-weight: 500;
 }
 
 .disease-risk-footer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--gray-200);
+}
+
+.disease-risk-footer a {
+  color: var(--primary-600);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.disease-risk-footer a:hover {
+  color: var(--primary-700);
+  gap: 8px;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--gray-900);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.action-btn:hover {
+  color: white;
+  border-color: var(--primary-500);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-btn:hover::before {
+  opacity: 1;
+}
+
+.action-btn:hover .action-icon,
+.action-btn:hover span {
+  position: relative;
+  z-index: 1;
+}
+
+.action-icon {
+  font-size: 1.75rem;
+  transition: transform 0.3s ease;
+}
+
+.action-btn:hover .action-icon {
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: var(--space-md);
+  }
+
+  .dashboard-widgets {
+    grid-template-columns: 1fr;
+  }
+
+  .disease-risk-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
 }
 
 .disease-risk-footer a {

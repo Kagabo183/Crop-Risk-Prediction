@@ -1,5 +1,5 @@
 ﻿from fastapi import APIRouter
-from app.api.v1.endpoints import users, predictions, farms, alerts, auth, features, satellite, predict, satellite_images, farm_satellite, analytics
+from app.api.v1.endpoints import users, predictions, farms, alerts, auth, features, satellite, predict, satellite_images, farm_satellite, analytics, data_management
 from app.api.v1 import diseases
 
 api_router = APIRouter()
@@ -15,6 +15,7 @@ api_router.include_router(satellite_images.router, prefix="/satellite-images", t
 api_router.include_router(predict.router, prefix="/predict", tags=["predict"])
 api_router.include_router(farm_satellite.router, prefix="/farm-satellite", tags=["farm-satellite"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(data_management.router, prefix="/data", tags=["data-management"])
 
 # Disease Prediction Endpoints (NEW)
 api_router.include_router(diseases.router, prefix="/diseases", tags=["diseases"])

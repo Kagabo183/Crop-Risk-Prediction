@@ -1,7 +1,16 @@
 .main-content {
-  margin-left: 220px;
-  margin-top: 64px;
+  margin-left: 260px;
+  margin-top: 70px;
   padding: 0;
-  min-height: calc(100vh - 64px);
-  background: transparent;
+  min-height: calc(100vh - 70px);
+  background: var(--gray-50);
+  width: calc(100% - 260px);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-top: 70px;
+  }
 }

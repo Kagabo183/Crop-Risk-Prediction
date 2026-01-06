@@ -180,3 +180,22 @@ export async function fetchEnrichedPredictions() {
   if (!res.ok) throw new Error('Failed to fetch enriched predictions');
   return res.json();
 }
+
+// ========== Data Management API ==========
+
+export async function fetchDataStatus() {
+  const res = await fetch(`${API_BASE}/data/data-status`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch data status');
+  return res.json();
+}
+
+export async function triggerDataFetch() {
+  const res = await fetch(`${API_BASE}/data/fetch-data`, {
+    method: 'POST',
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to trigger data fetch');
+  return res.json();
+}

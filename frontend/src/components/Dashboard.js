@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { fetchSatelliteImageCount, fetchFarms, fetchAlerts, fetchDashboardMetrics, fetchEnrichedPredictions } from '../api';
-import MapPanel from './MapPanel';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [satelliteCount, setSatelliteCount] = useState('--');
   const [farmCount, setFarmCount] = useState('--');
   const [predictionCount, setPredictionCount] = useState('--');
@@ -147,83 +148,74 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-content" style={{ padding: '24px 32px', maxWidth: 1800, margin: '0 auto', background: '#f8fafc' }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid #e2e8f0' }}>
-        <h1 style={{ margin: 0, marginBottom: 8, fontSize: 32, fontWeight: 700, color: '#1a202c' }}>
-          🌾 National Crop Risk Assessment
-        </h1>
-        <p style={{ margin: 0, color: '#718096', fontSize: 15, fontWeight: 500 }}>
-          Real-time agricultural risk monitoring and decision support system for Rwanda
-        </p>
+    <div className="dashboard-content">
+      <div className="dashboard-header">
+        <h1>Crop Risk Intelligence Dashboard</h1>
+        <p>Real-time monitoring and predictive analytics for crop disease management</p>
       </div>
 
-      {/* Key Metrics - More compact and visual */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 36 }}>
-        <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>🚜</div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Monitored Farms</div>
-          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{farmCount}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Active monitoring</div>
+      {/* Key Metrics - Clean Professional Style */}
+      <div className="dashboard-widgets">
+        <div className="widget widget--farms">
+          <div className="widget-icon">🏠</div>
+          <div className="widget-content">
+            <div className="widget-value">{farmCount}</div>
+            <div className="widget-label">Monitored Farms</div>
+            <div className="widget-sublabel">Active monitoring</div>
+          </div>
         </div>
         
-        <div style={{ background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(72, 187, 120, 0.3)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>📊</div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Risk Assessments</div>
-          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{predictionCount}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Total predictions</div>
+        <div className="widget widget--predictions">
+          <div className="widget-icon">📊</div>
+          <div className="widget-content">
+            <div className="widget-value">{predictionCount}</div>
+            <div className="widget-label">Risk Assessments</div>
+            <div className="widget-sublabel">Total predictions</div>
+          </div>
         </div>
         
-        <div style={{ background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(237, 137, 54, 0.3)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>⚠️</div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Active Alerts</div>
-          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{alertCount}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Requiring attention</div>
+        <div className="widget widget--alerts">
+          <div className="widget-icon">⚠️</div>
+          <div className="widget-content">
+            <div className="widget-value">{alertCount}</div>
+            <div className="widget-label">Active Alerts</div>
+            <div className="widget-sublabel">Requiring attention</div>
+          </div>
         </div>
         
-        <div style={{ background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', padding: '24px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(49, 130, 206, 0.3)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 80, opacity: 0.15 }}>🛰️</div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Satellite Images</div>
-          <div style={{ fontSize: 40, fontWeight: 'bold', color: '#fff' }}>{satelliteCount}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Data points collected</div>
+        <div className="widget widget--satellite">
+          <div className="widget-icon">🛰️</div>
+          <div className="widget-content">
+            <div className="widget-value">{satelliteCount}</div>
+            <div className="widget-label">Satellite Images</div>
+            <div className="widget-sublabel">Data points collected</div>
+          </div>
         </div>
       </div>
 
       {/* National Risk Analytics */}
       {analytics && (
-        <div style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-          padding: 32, 
-          borderRadius: 16, 
-          marginBottom: 36, 
-          color: '#fff',
-          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(255,255,255,0.08)', borderRadius: '50%' }}></div>
-          <div style={{ position: 'absolute', bottom: -30, left: -30, width: 150, height: 150, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }}></div>
-          
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <h3 style={{ marginBottom: 20, fontSize: 24, fontWeight: 700, letterSpacing: -0.5 }}>📊 National Risk Analytics</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
-                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Avg Risk Score</div>
-                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.avgRisk}%</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
-                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Avg Yield Loss</div>
-                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.avgYieldLoss}%</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
-                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>High Risk Farms</div>
-                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.highRisk}</div>
-                <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>({analytics.riskPercentage}% of total)</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 20, borderRadius: 12, backdropFilter: 'blur(10px)' }}>
-                <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 8, fontWeight: 600 }}>Disease Threats</div>
-                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{analytics.criticalDiseaseRisk}</div>
-              </div>
+        <div className="analytics-section">
+          <div className="section-header">
+            <h3>National Risk Analytics</h3>
+          </div>
+          <div className="analytics-grid">
+            <div className="analytics-card">
+              <div className="analytics-label">Avg Risk Score</div>
+              <div className="analytics-value">{analytics.avgRisk}%</div>
+            </div>
+            <div className="analytics-card">
+              <div className="analytics-label">Avg Yield Loss</div>
+              <div className="analytics-value">{analytics.avgYieldLoss}%</div>
+            </div>
+            <div className="analytics-card">
+              <div className="analytics-label">High Risk Farms</div>
+              <div className="analytics-value">{analytics.highRisk}</div>
+              <div className="analytics-sublabel">{analytics.riskPercentage}% of total</div>
+            </div>
+            <div className="analytics-card">
+              <div className="analytics-label">Disease Threats</div>
+              <div className="analytics-value">{analytics.criticalDiseaseRisk}</div>
             </div>
           </div>
         </div>
@@ -231,28 +223,26 @@ const Dashboard = () => {
 
       {/* Advanced Intelligence Metrics */}
       {intelligenceMetrics && (
-        <div style={{ marginBottom: 36, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+        <div className="intelligence-grid">
           {/* Time to Impact Distribution */}
-          <div style={{ background: '#fff', padding: 24, borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>⏱️</span> Time to Impact
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fee', borderRadius: 10, border: '1px solid #fecaca' }}>
-                <span style={{ fontSize: 14, color: '#7f1d1d', fontWeight: 600 }}>🚨 Immediate (&lt; 7 days)</span>
-                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#c53030' }}>{intelligenceMetrics.immediate}</span>
+          <div className="intelligence-card">
+            <h3 className="card-title">Time to Impact</h3>
+            <div className="impact-list">
+              <div className="impact-item impact-immediate">
+                <span className="impact-label">Immediate (&lt; 7 days)</span>
+                <span className="impact-value">{intelligenceMetrics.immediate}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fef3c7', borderRadius: 10, border: '1px solid #fde68a' }}>
-                <span style={{ fontSize: 14, color: '#78350f', fontWeight: 600 }}>⚠️ Short-term (7-14 days)</span>
-                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#c05621' }}>{intelligenceMetrics.shortTerm}</span>
+              <div className="impact-item impact-short">
+                <span className="impact-label">Short-term (7-14 days)</span>
+                <span className="impact-value">{intelligenceMetrics.shortTerm}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#fef3e2', borderRadius: 10, border: '1px solid #fed7aa' }}>
-                <span style={{ fontSize: 14, color: '#7c2d12', fontWeight: 600 }}>⏰ Medium-term (14-30 days)</span>
-                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#92400e' }}>{intelligenceMetrics.mediumTerm}</span>
+              <div className="impact-item impact-medium">
+                <span className="impact-label">Medium-term (14-30 days)</span>
+                <span className="impact-value">{intelligenceMetrics.mediumTerm}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#ecfdf5', borderRadius: 10, border: '1px solid #a7f3d0' }}>
-                <span style={{ fontSize: 14, color: '#064e3b', fontWeight: 600 }}>✅ Stable (&gt; 30 days)</span>
-                <span style={{ fontSize: 22, fontWeight: 'bold', color: '#22543d' }}>{intelligenceMetrics.stable}</span>
+              <div className="impact-item impact-stable">
+                <span className="impact-label">Stable (&gt; 30 days)</span>
+                <span className="impact-value">{intelligenceMetrics.stable}</span>
               </div>
             </div>
           </div>
@@ -410,7 +400,7 @@ const Dashboard = () => {
         <div style={{flex: 2, minWidth: 500}}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h3 style={{ fontSize: 22, fontWeight: 700, color: '#1a202c', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>📋</span> Recent Risk Assessments
+              Recent Risk Assessments
             </h3>
             <span style={{ fontSize: 13, color: '#718096', fontWeight: 500 }}>Last 10 predictions</span>
           </div>
@@ -423,11 +413,12 @@ const Dashboard = () => {
                   <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Time</th>
                   <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Conf.</th>
                   <th style={{padding: '16px 20px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>Drivers</th>
+                  <th style={{padding: '16px 20px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#2d3748', textTransform: 'uppercase', letterSpacing: 0.5}}>View on Map</th>
                 </tr>
               </thead>
               <tbody>
                 {recentPredictions.length === 0 && (
-                  <tr><td colSpan={5} style={{padding: 32, textAlign: 'center', color: '#a0aec0', fontSize: 14}}>No risk assessments available.</td></tr>
+                  <tr><td colSpan={6} style={{padding: 32, textAlign: 'center', color: '#a0aec0', fontSize: 14}}>No risk assessments available.</td></tr>
                 )}
                 {recentPredictions.map((pred, idx) => {
                   const badge = getRiskBadge(pred.risk_score);
@@ -517,6 +508,38 @@ const Dashboard = () => {
                           </div>
                         ) : '-'}
                       </td>
+                      <td style={{padding: '16px 20px', textAlign: 'center'}}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/risk-map?farmId=${pred.farm_id}`);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          View
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -526,7 +549,7 @@ const Dashboard = () => {
                     id={`detail-${pred.id}`}
                     style={{ display: expandedRows.includes(pred.id) ? 'table-row' : 'none', background: '#f7fafc' }}
                   >
-                    <td colSpan={5} style={{ padding: 16 }}>
+                    <td colSpan={6} style={{ padding: 16 }}>
                       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                         {/* Risk Explanation */}
                         <div style={{ flex: '1 1 300px' }}>
@@ -596,24 +619,6 @@ const Dashboard = () => {
           </div>
         </div>
         <div style={{flex: 1, minWidth: 380, display: 'flex', flexDirection: 'column', gap: 20}}>
-          {/* Map Section */}
-          <div style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-            <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', borderBottom: '2px solid #cbd5e0' }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a202c', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🗺️</span> Farm Locations
-              </h3>
-            </div>
-            <div style={{ height: 420 }}>
-              <MapPanel
-                farms={farmsList}
-                predictions={allPredictions}
-                selectedFarmId={selectedFarmId}
-                onSelectFarm={(id) => handleSelectFarm(id)}
-                filters={{ ...filters, onChange: (f) => setFilters(f) }}
-              />
-            </div>
-          </div>
-
           {/* Alerts Section */}
           <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', borderBottom: '2px solid #cbd5e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

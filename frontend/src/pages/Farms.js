@@ -1,7 +1,6 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { fetchFarms } from '../api';
+import '../styles/common.css';
 
 const Farms = () => {
 	const [farms, setFarms] = useState([]);
@@ -20,36 +19,66 @@ const Farms = () => {
 			});
 	}, []);
 
+	if (loading) {
+		return (
+			<div className="page-container">
+				<div className="loading-state">Loading farms...</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="page-container">
+				<div className="error-state">Error: {error}</div>
+			</div>
+		);
+	}
+
 	return (
-		<div style={{ padding: 32 }}>
-			<h2>Farms</h2>
-			{loading && <p>Loading...</p>}
-			{error && <p style={{ color: 'red' }}>Error: {error}</p>}
-			{!loading && !error && (
-				<table style={{width: '100%', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderCollapse: 'collapse'}}>
+		<div className="page-container">
+			<div className="page-header">
+				<h1>🏠 Farm Management</h1>
+				<p>Monitor and manage all registered farms in the system</p>
+			</div>
+
+			<div className="data-table-container">
+				<table className="data-table">
 					<thead>
-						<tr style={{background: '#f7fafc'}}>
-							<th style={{padding: 8, textAlign: 'left'}}>Name</th>
-							<th style={{padding: 8, textAlign: 'left'}}>Location</th>
-							<th style={{padding: 8, textAlign: 'left'}}>Area (ha)</th>
-							<th style={{padding: 8, textAlign: 'left'}}>Owner</th>
+						<tr>
+							<th>Farm Name</th>
+							<th>Location</th>
+							<th>Area (ha)</th>
+							<th>Owner ID</th>
+							<th>Status</th>
 						</tr>
 					</thead>
 					<tbody>
-						{farms.length === 0 && (
-							<tr><td colSpan={4} style={{padding: 8}}>No farms found.</td></tr>
-						)}
-						{farms.map(farm => (
-							<tr key={farm.id}>
-								<td style={{padding: 8}}>{farm.name || '-'}</td>
-								<td style={{padding: 8}}>{farm.location || '-'}</td>
-								<td style={{padding: 8}}>{farm.area != null ? farm.area : '-'}</td>
-								<td style={{padding: 8}}>{farm.owner_id || '-'}</td>
+						{farms.length === 0 ? (
+							<tr>
+								<td colSpan={5}>
+									<div className="empty-state">
+										<div className="empty-state-icon">🌾</div>
+										<div className="empty-state-text">No farms found</div>
+									</div>
+								</td>
 							</tr>
-						))}
+						) : (
+							farms.map(farm => (
+								<tr key={farm.id}>
+									<td>{farm.name || '-'}</td>
+									<td>{farm.location || '-'}</td>
+									<td>{farm.area != null ? farm.area : '-'}</td>
+									<td>{farm.owner_id || '-'}</td>
+									<td>
+										<span className="badge badge-success">Active</span>
+									</td>
+								</tr>
+							))
+						)}
 					</tbody>
 				</table>
-			)}
+			</div>
 		</div>
 	);
 };
