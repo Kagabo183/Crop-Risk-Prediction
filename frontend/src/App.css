@@ -4,6 +4,9 @@
    ======================================== */
 
 :root {
+  --app-header-height: 56px;
+  --app-sidebar-width: 260px;
+
   /* Primary Colors - Professional Blue */
   --primary-50: #e7f5ff;
   --primary-100: #d0ebff;

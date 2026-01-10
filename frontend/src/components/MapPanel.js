@@ -323,6 +323,14 @@ const MapPanel = ({ farms = [], predictions = [], selectedFarmId, onSelectFarm, 
     const statusColors = { healthy: '#10b981', moderate: '#f59e0b', stressed: '#ef4444', unknown: '#9ca3af' };
     const statusColor = statusColors[ndviStatus];
     
+    // Data source indicator
+    const dataSource = farm.data_source || 'simulated';
+    const isRealData = dataSource === 'real';
+    const sourceLabel = isRealData ? 'REAL SENTINEL-2' : 'SIMULATED';
+    const sourceColor = isRealData ? '#059669' : '#6b7280';
+    const tile = farm.tile || '';
+    const cloudCover = farm.cloud_cover != null ? `${(farm.cloud_cover * 100).toFixed(1)}%` : '';
+    
     const risk = pred?.risk_score ? `${pred.risk_score.toFixed(1)}%` : 'N/A';
     const yieldLoss = pred?.yield_loss ? `${pred.yield_loss.toFixed(1)}%` : 'N/A';
     
@@ -330,17 +338,20 @@ const MapPanel = ({ farms = [], predictions = [], selectedFarmId, onSelectFarm, 
     return `
       <div style="min-width:260px">
         <div style="font-weight:700;margin-bottom:8px;color:#1f2937">${name}</div>
-        <div style="font-size:13px;color:#444;margin-bottom:6px">📍 ${loc}</div>
-        <div style="font-size:13px;color:#444;margin-bottom:6px">📏 Area: ${area}</div>
+        <div style="display:inline-block;padding:2px 8px;background:${isRealData ? '#d1fae5' : '#f3f4f6'};color:${sourceColor};border-radius:4px;font-size:11px;font-weight:600;margin-bottom:8px">${sourceLabel}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:6px">${loc}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:6px">Area: ${area}</div>
         <div style="padding:8px;background:#f9fafb;border-radius:6px;margin:8px 0">
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">🛰️ SATELLITE DATA</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">SATELLITE DATA</div>
           <div style="font-size:14px;font-weight:600;color:${statusColor};margin-bottom:4px">NDVI: ${ndvi}</div>
           <div style="font-size:12px;color:#6b7280">Status: <span style="color:${statusColor};font-weight:600">${ndviStatus.toUpperCase()}</span></div>
           <div style="font-size:12px;color:#6b7280">Date: ${ndviDate}</div>
           <div style="font-size:12px;color:#6b7280">Type: ${imageType}</div>
+          ${tile ? `<div style="font-size:12px;color:#6b7280">Tile: ${tile}</div>` : ''}
+          ${cloudCover ? `<div style="font-size:12px;color:#6b7280">Cloud Cover: ${cloudCover}</div>` : ''}
         </div>
-        <div style="font-size:13px;color:#444;margin-bottom:4px">⚠️ Risk Score: ${risk}</div>
-        <div style="font-size:13px;color:#444;margin-bottom:8px">📉 Yield Loss: ${yieldLoss}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:4px">Risk Score: ${risk}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:8px">Yield Loss: ${yieldLoss}</div>
         <div style="margin-top:8px;font-size:13px"><a target="_blank" rel="noopener noreferrer" href="${mapsLink}">Open in Google Maps</a></div>
       </div>
     `;
@@ -424,7 +435,7 @@ const MapPanel = ({ farms = [], predictions = [], selectedFarmId, onSelectFarm, 
                 fontWeight: viewMode === 'markers' ? 600 : 400
               }}
             >
-              📍 Risk Points
+              Risk Points
             </button>
             <button 
               onClick={() => setViewMode('satellite')} 
@@ -439,9 +450,19 @@ const MapPanel = ({ farms = [], predictions = [], selectedFarmId, onSelectFarm, 
                 fontWeight: viewMode === 'satellite' ? 600 : 400
               }}
             >
-              🛰️ Satellite View
+              Satellite View
             </button>
           </div>
+          {viewMode === 'satellite' && satelliteData.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+              <span style={{ padding: '2px 8px', background: '#d1fae5', color: '#059669', borderRadius: 4, fontWeight: 600 }}>
+                Real: {satelliteData.filter(f => f.data_source === 'real').length}
+              </span>
+              <span style={{ padding: '2px 8px', background: '#f3f4f6', color: '#6b7280', borderRadius: 4, fontWeight: 600 }}>
+                Simulated: {satelliteData.filter(f => f.data_source !== 'real').length}
+              </span>
+            </div>
+          )}
           {viewMode === 'markers' && (
             <label style={{ fontSize: 13, color: '#4a5568' }}>
               <input type="checkbox" checked={stressCompare} onChange={(e) => setStressCompare(e.target.checked)} style={{ marginRight: 6 }} />

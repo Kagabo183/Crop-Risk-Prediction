@@ -14,6 +14,7 @@ const Sidebar = () => (
         <li><NavLink to="/risk-map" className={({ isActive }) => isActive ? 'active' : ''}>Risk Map</NavLink></li>
         <li><NavLink to="/diseases" className={({ isActive }) => isActive ? 'active' : ''}>Disease Predictions</NavLink></li>
         <li><NavLink to="/disease-forecasts" className={({ isActive }) => isActive ? 'active' : ''}>Disease Forecasts</NavLink></li>
+        <li><NavLink to="/weather" className={({ isActive }) => isActive ? 'active' : ''}>Weather</NavLink></li>
         <li><NavLink to="/alerts" className={({ isActive }) => isActive ? 'active' : ''}>Alerts</NavLink></li>
         <li><NavLink to="/data-status" className={({ isActive }) => isActive ? 'active' : ''}>Data Status</NavLink></li>
         <li><NavLink to="/users" className={({ isActive }) => isActive ? 'active' : ''}>Users</NavLink></li>

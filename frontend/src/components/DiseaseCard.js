@@ -13,15 +13,15 @@ const DiseaseCard = ({ disease, prediction, onPredict, onViewDetails }) => {
     if (!actions || actions.length === 0) return null;
     const firstAction = actions[0];
     if (firstAction.includes('immediately') || firstAction.includes('urgent')) {
-      return { level: 'immediate', icon: '⚡', color: '#ef4444' };
+      return { level: 'immediate', color: '#ef4444' };
     }
     if (firstAction.includes('24') || firstAction.includes('48')) {
-      return { level: 'soon', icon: '⏰', color: '#f97316' };
+      return { level: 'soon', color: '#f97316' };
     }
     if (firstAction.includes('days') || firstAction.includes('week')) {
-      return { level: 'scheduled', icon: '📅', color: '#f59e0b' };
+      return { level: 'scheduled', color: '#f59e0b' };
     }
-    return { level: 'monitor', icon: '👁️', color: '#10b981' };
+    return { level: 'monitor', color: '#10b981' };
   };
 
   const urgency = prediction ? getTreatmentUrgency(prediction.recommended_actions) : null;
@@ -75,7 +75,7 @@ const DiseaseCard = ({ disease, prediction, onPredict, onViewDetails }) => {
             <h4>
               {urgency && (
                 <span style={{ color: urgency.color }}>
-                  {urgency.icon} {urgency.level.toUpperCase()}
+                  {urgency.level.toUpperCase()}
                 </span>
               )}
               {!urgency && 'Recommended Actions'}

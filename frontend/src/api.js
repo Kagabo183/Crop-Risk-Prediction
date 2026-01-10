@@ -43,6 +43,30 @@ export async function fetchDiseases() {
   return res.json();
 }
 
+export async function createDisease(disease) {
+  const res = await fetch(`${API_BASE}/diseases/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(disease),
+  });
+
+  if (!res.ok) {
+    let detail = 'Failed to create disease';
+    try {
+      const data = await res.json();
+      detail = data?.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(detail);
+  }
+
+  return res.json();
+}
+
 export async function predictDisease(farmId, diseaseName, cropType, forecastDays = 7) {
   const res = await fetch(`${API_BASE}/diseases/predict`, {
     method: 'POST',
@@ -106,21 +130,100 @@ export async function fetchDiseasePredictions(farmId, diseaseName, limit = 10) {
   return res.json();
 }
 
+export async function fetchFarmObservations(farmId, limit = 20) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  const res = await fetch(`${API_BASE}/diseases/observations/farm/${farmId}?${params}`, {
+    headers: { ...getAuthHeaders() },
+  });
+  if (!res.ok) throw new Error('Failed to fetch observations');
+  return res.json();
+}
+
 export async function submitDiseaseObservation(farmId, diseaseName, severity, notes = '') {
+  // Backward compatible signature:
+  //   submitDiseaseObservation(farmId, diseaseName, severity, notes)
+  // Preferred signature:
+  //   submitDiseaseObservation({ farmId, diseaseId, diseaseName, diseasePresent, diseaseSeverity, notes, observationDate })
+  let payload;
+  if (typeof farmId === 'object' && farmId) {
+    const {
+      farmId: fId,
+      diseaseId,
+      diseaseName: dName,
+      diseasePresent = true,
+      diseaseSeverity,
+      notes: n = '',
+      observationDate,
+    } = farmId;
+
+    payload = {
+      farm_id: fId,
+      disease_id: diseaseId ?? null,
+      observation_date: observationDate || new Date().toISOString().slice(0, 10),
+      disease_present: Boolean(diseasePresent),
+      disease_severity: diseaseSeverity ?? null,
+      notes: n || null,
+    };
+
+    // If diseaseId not provided but diseaseName is, resolve it.
+    if (!payload.disease_id && dName) {
+      const diseases = await fetchDiseases();
+      const match = (Array.isArray(diseases) ? diseases : []).find((d) => d?.name === dName);
+      payload.disease_id = match?.id ?? null;
+    }
+  } else {
+    const diseases = await fetchDiseases();
+    const match = (Array.isArray(diseases) ? diseases : []).find((d) => d?.name === diseaseName);
+    payload = {
+      farm_id: farmId,
+      disease_id: match?.id ?? null,
+      observation_date: new Date().toISOString().slice(0, 10),
+      disease_present: true,
+      disease_severity: severity || null,
+      notes: notes || null,
+    };
+  }
+
   const res = await fetch(`${API_BASE}/diseases/observations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders()
     },
-    body: JSON.stringify({
-      farm_id: farmId,
-      disease_name: diseaseName,
-      severity,
-      notes
-    })
+    body: JSON.stringify(payload)
   });
-  if (!res.ok) throw new Error('Failed to submit observation');
+  if (!res.ok) {
+    let detail = 'Failed to submit observation';
+    try {
+      const data = await res.json();
+      detail = data?.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+export async function updateFarm(farmId, patch) {
+  const res = await fetch(`${API_BASE}/farms/${farmId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(patch || {}),
+  });
+  if (!res.ok) {
+    let detail = 'Failed to update farm';
+    try {
+      const data = await res.json();
+      detail = data?.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(detail);
+  }
   return res.json();
 }
 // Simple API utility for backend requests
@@ -152,6 +255,24 @@ export async function fetchAlerts() {
     headers: { ...getAuthHeaders() }
   });
   if (!res.ok) throw new Error('Failed to fetch alerts');
+  return res.json();
+}
+
+// ===== Pipeline analytics (geographic breakdown) =====
+
+export async function fetchRiskByProvince() {
+  const res = await fetch(`${API_BASE}/pipeline/predictions/by-province`, {
+    headers: { ...getAuthHeaders() },
+  });
+  if (!res.ok) throw new Error('Failed to fetch province analytics');
+  return res.json();
+}
+
+export async function fetchRiskByDistrict() {
+  const res = await fetch(`${API_BASE}/pipeline/predictions/by-district`, {
+    headers: { ...getAuthHeaders() },
+  });
+  if (!res.ok) throw new Error('Failed to fetch district analytics');
   return res.json();
 }
 
@@ -197,5 +318,28 @@ export async function triggerDataFetch() {
     headers: { ...getAuthHeaders() }
   });
   if (!res.ok) throw new Error('Failed to trigger data fetch');
+  return res.json();
+}
+
+
+// ========== Weather API ==========
+
+export async function fetchWeatherForecast(lat, lon, days = 7) {
+  const params = new URLSearchParams({ lat, lon, days: days.toString() });
+  const res = await fetch(`${API_BASE}/weather/forecast?${params}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch weather forecast');
+  return res.json();
+}
+
+// ========== Remote Sensing Diagnostics (Sentinel/NDVI) ==========
+
+export async function fetchRemoteSensingDiagnostics(farmId, days = 30, topN = 3) {
+  const params = new URLSearchParams({ days: String(days), top_n: String(topN) });
+  const res = await fetch(`${API_BASE}/remote-sensing/diagnostics/${farmId}?${params}`, {
+    headers: { ...getAuthHeaders() },
+  });
+  if (!res.ok) throw new Error('Failed to fetch remote sensing diagnostics');
   return res.json();
 }

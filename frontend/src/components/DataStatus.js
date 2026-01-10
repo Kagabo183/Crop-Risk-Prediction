@@ -59,7 +59,7 @@ function DataStatus() {
           onClick={handleFetchData} 
           disabled={fetching}
         >
-          {fetching ? '🔄 Fetching...' : '🔄 Fetch Latest Data'}
+          {fetching ? 'Fetching...' : 'Fetch Latest Data'}
         </button>
       </div>
 
@@ -68,7 +68,7 @@ function DataStatus() {
       <div className="status-cards">
         {/* Satellite Data Card */}
         <div className={`status-card ${status.satellite_data.up_to_date ? 'up-to-date' : 'outdated'}`}>
-          <h3>🛰️ Satellite Data</h3>
+          <h3>Satellite Data</h3>
           <div className="card-content">
             <div className="stat">
               <span className="label">Total Images:</span>
@@ -82,8 +82,8 @@ function DataStatus() {
               <span className="label">Status:</span>
               <span className={`badge ${status.satellite_data.up_to_date ? 'success' : 'warning'}`}>
                 {status.satellite_data.up_to_date 
-                  ? '✅ Up to Date' 
-                  : `⚠️ ${status.satellite_data.days_behind} days behind`}
+                  ? 'Up to Date' 
+                  : `${status.satellite_data.days_behind} days behind`}
               </span>
             </div>
             <div className="date-range">
@@ -94,7 +94,7 @@ function DataStatus() {
 
         {/* Weather Data Card */}
         <div className={`status-card ${status.weather_data.up_to_date ? 'up-to-date' : 'outdated'}`}>
-          <h3>🌦️ Weather Data</h3>
+          <h3>Weather Data</h3>
           <div className="card-content">
             <div className="stat">
               <span className="label">Total Records:</span>
@@ -108,8 +108,8 @@ function DataStatus() {
               <span className="label">Status:</span>
               <span className={`badge ${status.weather_data.up_to_date ? 'success' : 'warning'}`}>
                 {status.weather_data.up_to_date 
-                  ? '✅ Up to Date' 
-                  : `⚠️ ${status.weather_data.days_behind} days behind`}
+                  ? 'Up to Date' 
+                  : `${status.weather_data.days_behind} days behind`}
               </span>
             </div>
             <div className="date-range">
@@ -120,7 +120,7 @@ function DataStatus() {
 
         {/* Predictions Card */}
         <div className="status-card predictions">
-          <h3>🎯 Predictions</h3>
+          <h3>Predictions</h3>
           <div className="card-content">
             <div className="stat">
               <span className="label">Total Predictions:</span>

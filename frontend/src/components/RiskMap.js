@@ -188,7 +188,7 @@ const RiskMap = () => {
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           font-size: 20px;
         ">
-          🌾
+          
         </div>
       `,
       iconSize: [40, 40],
