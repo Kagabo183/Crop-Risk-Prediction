@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+celerybeat-schedule
+.pytest_cache/
+.coverage
+htmlcov/

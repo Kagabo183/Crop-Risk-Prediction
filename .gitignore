@@ -40,14 +40,20 @@ Thumbs.db
 
 # Project specific
 logs/*.log
+backend/logs/
+backend/data/
+backend/celerybeat-schedule
 data/raw/*
 data/processed/*
 data/sentinel2/*.tif
+data/sentinel2_real/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/sentinel2/.gitkeep
 *.db
 *.sqlite3
+*.sqlite
+.cache.sqlite
 
 # Docker volumes
 db_data/

@@ -13,7 +13,7 @@ services:
       - db_data:/var/lib/postgresql/data
 
   web:
-    build: .
+    build: ./backend
     restart: unless-stopped
     env_file: .env
     command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
@@ -25,8 +25,10 @@ services:
       - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
       - REDIS_URL=redis
     volumes:
-      - .:/app:cached
-      - ./data/sentinel2:/app/data/sentinel2:cached
+      - ./backend:/app:cached
+      - ./data:/app/data:cached
+      - ./logs:/app/logs:cached
+
   redis:
     image: redis:7
     restart: unless-stopped
@@ -34,28 +36,32 @@ services:
       - "6379:6379"
 
   worker:
-    build: .
+    build: ./backend
     command: celery -A app.tasks.celery_app.celery_app worker --loglevel=info --concurrency=6
     env_file: .env
     depends_on:
       - redis
       - db
     volumes:
-      - .:/app:cached
+      - ./backend:/app:cached
+      - ./data:/app/data:cached
+      - ./logs:/app/logs:cached
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - REDIS_URL=redis
       - DATABASE_URL=postgresql://postgres:1234@db:5432/crop_risk_db
 
   beat:
-    build: .
+    build: ./backend
     command: celery -A app.tasks.celery_app.celery_app beat --loglevel=info
     env_file: .env
     depends_on:
       - redis
       - db
     volumes:
-      - .:/app:cached
+      - ./backend:/app:cached
+      - ./data:/app/data:cached
+      - ./logs:/app/logs:cached
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - REDIS_URL=redis
